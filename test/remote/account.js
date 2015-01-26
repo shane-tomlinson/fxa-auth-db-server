@@ -494,6 +494,27 @@ test(
         t.equal(user.account.emailVerified, !!account.emailVerified, 'Both fields emailVerified are the same')
         console.log(user.account)
         t.equal(account.lockedAt, lockedAt, 'lockedAt is now set to what was provided')
+        // unlock the account
+        return client.postThen('/account/' + user.accountId + '/unlock')
+      })
+      .then(function(r) {
+        respOk(t, r)
+
+        return client.getThen('/emailRecord/' + emailToHex(user.account.email))
+      })
+      .then(function(r) {
+        respOk(t, r)
+        var account = r.obj
+        ACCOUNT_FIELDS.forEach(function(f) {
+          t.equal(user.account[f], account[f], 'Both Fields ' + f + ' are the same')
+        })
+        t.equal(!!account.lockedAt, false, 'lockedAt is falsey')
+
+        // re-lock the account
+        return client.postThen('/account/' + user.accountId + '/lock', { lockedAt : lockedAt })
+      })
+      .then(function(r) {
+        respOk(t, r)
 
         // unlock the account by performing a passwordForgotToken
         return client.putThen('/passwordForgotToken/' + user.passwordForgotTokenId, user.passwordForgotToken)

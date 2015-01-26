@@ -484,6 +484,14 @@ module.exports = function (log, error) {
     return this.write(UPDATE_LOCKED_AT, [data.lockedAt, uid])
   }
 
+  // Update : accounts
+  // Set    : lockedAt = $1
+  // Where  : uid = $2
+  MySql.prototype.deleteLockedAt = function (uid) {
+    // an unlocked account has lockedAt=null
+    return this.write(UPDATE_LOCKED_AT, [null, uid])
+  }
+
   // Internal
 
   MySql.prototype.singleQuery = function (poolName, sql, params) {

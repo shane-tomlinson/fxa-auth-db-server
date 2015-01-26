@@ -334,7 +334,7 @@ DB.connect(config)
       test(
         'email verification, locale change and locked',
         function (t) {
-          t.plan(8)
+          t.plan(10)
 
           var lockedAt = Date.now()
 
@@ -377,8 +377,19 @@ DB.connect(config)
           })
           .then(function(res) {
             t.deepEqual(res, {}, 'Returned an empty object for verifyEmail, for a non-existant email')
+
+            // try to unlock the account
+            return db.deleteLockedAt(ACCOUNT.uid);
           }, function(err) {
             t.fail('We should not have failed this .verifyEmail() request')
+          })
+          .then(function(result) {
+            t.deepEqual(result, {}, 'Returned an empty object for deleteLockedAt')
+            // now check it's been saved
+            return db.emailRecord(Buffer(ACCOUNT.email))
+          })
+          .then(function(account) {
+            t.equal(account.lockedAt, null, 'account should now be unlocked')
           })
         }
       )
